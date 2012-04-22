@@ -4,6 +4,7 @@ require("player")
 require("projectile")
 require("amoeba")
 require("bacteria")
+require("worm")
 
 
 function love.load()
@@ -21,6 +22,7 @@ function love.load()
     bgGfx = love.graphics.newImage("gfx/bg.png")
     gameoverGfx = love.graphics.newImage("gfx/gameover.png")
     introGfx = love.graphics.newImage("gfx/intro.png")
+    wormGfx = love.graphics.newImage("gfx/worm.png")
 
     font = love.graphics.newFont("chintzy_cpu_brk/chintzy.ttf", 12)
     love.graphics.setFont(font)
@@ -41,41 +43,31 @@ function love.load()
     state = "intro"
 	projectiles = {}
 	entities = {}
-	for i=1,20,1 do
-        a =  Bacteria(math.random(800), math.random(600))
-		table.insert(entities, a)
-        while collides(a, player:getRect()) do
-            a.x = math.random(800)
-            a.y = math.random(600)
-        end
-	end
-	for i=1,20,1 do
-        a =  Amoeba(math.random(800), math.random(600))
-		table.insert(entities, a)
-        while collides(a, player:getRect()) do
-            a.x = math.random(800)
-            a.y = math.random(600)
-        end
-	end
+    table.insert(entities, Worm(math.random(800), math.random(600), 7))
 end
 
-
-function love.update(dt)
+function love.keyreleased(key)
     if state == "intro" then
-        if love.keyboard.isDown("return") then
+        if key == "return" then
             state = "game"
         else
             return
         end
     elseif state == "topten" then
-        if love.keyboard.isDown("return") then
+        if key == "return" then
             state = "intro"
             lives = 2
             gameoverDt = 3
+            gameover = false
+            player:reset(400,300)
         else
             return
         end
-    elseif gameover then
+    end
+end
+
+function love.update(dt)
+    if gameover then
         gameoverDt = gameoverDt - dt
         if gameoverDt < 0 then
             state = "topten"
@@ -97,7 +89,7 @@ function love.update(dt)
         if lives < 0 then
             gameover = true
         else
-            player:reset()
+            player:reset(400,300)
         end
     end
 
@@ -122,14 +114,14 @@ function love.draw()
     love.graphics.draw(bgGfx, 0, 0)
 
     if state == "topten" then
-        love.graphics.print("TOP TEN SCORES:", 300, 25, 0, 3, 3)
+        love.graphics.print("TOP TEN SCORES", 75, 25, 0, 6,6)
         for i=1,#highscores,1 do
             if highscores[i] == score then
                 love.graphics.setColor(255, 0, 0)
-                love.graphics.print(i..". "..highscores[i], 300, 50 + i * 15, 0, 2, 2)
+                love.graphics.print(i..". "..highscores[i], 300, 70 + i * 25, 0, 3,3)
                 love.graphics.setColor(255,255,255)
             else
-                love.graphics.print(i..". "..highscores[i], 300, 50 + i * 15, 0, 2, 2)
+                love.graphics.print(i..". "..highscores[i], 300, 70 + i * 25, 0, 2, 2)
             end
         end
         return

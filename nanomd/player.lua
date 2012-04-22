@@ -37,10 +37,12 @@ function Player:getRect()
 end
 
 
-function Player:reset()
+function Player:reset(x, y)
     self.isDestroyed = false
     self.destroyedDt = 0
     self.spawnDt = 3
+    self.x = x
+    self.y = y
 end
 
 --[[function Player:updateRect()
