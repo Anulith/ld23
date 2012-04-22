@@ -51,7 +51,6 @@ end]]--
 function Player:update(dt)
     if self.isDestroyed then
         self.destroyedDt = self.destroyedDt + dt
-        if self.destroyedDt > 3 then return false end
 
         self.piece1.r = self.piece1.r + self.piece1.rspeed * dt
         self.piece1.x = self.piece1.x + self.piece1.xspeed * dt
@@ -65,6 +64,7 @@ function Player:update(dt)
         self.piece3.x = self.piece3.x + self.piece3.xspeed * dt
         self.piece3.y = self.piece3.y + self.piece3.yspeed * dt
 
+        if self.destroyedDt > 3 then return false end
         return true
     end
 
@@ -103,7 +103,7 @@ function Player:update(dt)
 
     --self:updateRect()
 
-	if love.keyboard.isDown("x") then
+	if love.keyboard.isDown("x") or love.keyboard.isDown("k") then
 		self.speed = 300
 	else
 		self.speed = 150
@@ -130,7 +130,6 @@ function Player:draw()
     else
 	    love.graphics.draw(ship, self.x, self.y, self.r, 1, 1, self.offsetX, self.offsetY)
     end
-    love.graphics.print(self.rateOfFire, 0, 20)
 end
 
 function Player:destroy()
