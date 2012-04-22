@@ -17,19 +17,15 @@ function Amoeba:update(dt)
 	if self.x < 0 then
 		self.x = 0
 		self.xspeed = -self.xspeed
-		self.yspeed = -self.yspeed
 	elseif self.x > (800 - self.width) then
 		self.x = 800 - self.width
 		self.xspeed = -self.xspeed
-		self.yspeed = -self.yspeed
 	end
 	if self.y < 0 then
 		self.y = 0
-		self.xspeed = -self.xspeed
 		self.yspeed = -self.yspeed
 	elseif self.y > (600 - self.height) then
 		self.y = 600 - self.height
-		self.xspeed = -self.xspeed
 		self.yspeed = -self.yspeed
 	end
 	for i,p in pairs(projectiles) do
@@ -39,6 +35,10 @@ function Amoeba:update(dt)
 			return false
 		end
 	end
+    if(collides(self, player:getRect())) then
+        player:destroy()
+        return false
+    end
 	return true
 end
 

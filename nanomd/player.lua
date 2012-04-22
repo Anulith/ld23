@@ -7,21 +7,71 @@ function Player:__init(x, y, speed, rspeed, rateOfFire)
     self.speed = speed
     self.rspeed = rspeed
     self.rateOfFire = rateOfFire
-    self.rect = {}
-    self.rect.width = ship:getWidth()
-    self.rect.height = ship:getHeight()
-    self.offsetX = self.rect.width / 2
-    self.offsetY = self.rect.height / 2
-    self:updateRect()
+    --self.rect = {}
+    --self.rect.width = ship:getWidth()
+    --self.rect.height = ship:getHeight()
+    self.offsetX = ship:getWidth()  / 2
+    self.offsetY = ship:getHeight() / 2
+    --self:updateRect()
     self.fireDt = rateOfFire
+    self.isDestroyed = false
+    self.destroyedDt = 0
+    self.spawnDt = 3
 end
 
-function Player:updateRect()
+function Player:getRect()
+    r = {}
+    if self.isDestroyed or self.spawnDt > 0 then
+        r.width = 0
+        r.height = 0
+        r.x = -1
+        r.y = -1
+    else
+        r.width = ship:getWidth()
+        r.height = ship:getHeight()
+        r.x = self.x - self.offsetX
+        r.y = self.y - self.offsetY
+    end
+
+    return r
+end
+
+
+function Player:reset()
+    self.isDestroyed = false
+    self.destroyedDt = 0
+    self.spawnDt = 3
+end
+
+--[[function Player:updateRect()
     self.rect.x = self.x - self.offsetX
     self.rect.y = self.y - self.offsetY
-end
+end]]--
 
 function Player:update(dt)
+    if self.isDestroyed then
+        self.destroyedDt = self.destroyedDt + dt
+        if self.destroyedDt > 3 then return false end
+
+        self.piece1.r = self.piece1.r + self.piece1.rspeed * dt
+        self.piece1.x = self.piece1.x + self.piece1.xspeed * dt
+        self.piece1.y = self.piece1.y + self.piece1.yspeed * dt
+
+        self.piece2.r = self.piece2.r + self.piece2.rspeed * dt
+        self.piece2.x = self.piece2.x + self.piece2.xspeed * dt
+        self.piece2.y = self.piece2.y + self.piece2.yspeed * dt
+
+        self.piece3.r = self.piece3.r + self.piece2.rspeed * dt
+        self.piece3.x = self.piece3.x + self.piece3.xspeed * dt
+        self.piece3.y = self.piece3.y + self.piece3.yspeed * dt
+
+        return true
+    end
+
+    if self.spawnDt > 0 then
+        self.spawnDt = self.spawnDt - dt
+    end
+
 	if love.keyboard.isDown("right") or love.keyboard.isDown("d") then
 		self.r = self.r + dt * self.rspeed
 	elseif love.keyboard.isDown("left") or love.keyboard.isDown("a") then
@@ -51,7 +101,7 @@ function Player:update(dt)
 		end
 	end
 
-    self:updateRect()
+    --self:updateRect()
 
 	if love.keyboard.isDown("x") then
 		self.speed = 300
@@ -64,9 +114,33 @@ function Player:update(dt)
 	elseif love.keyboard.isDown("-") then
 		self.rateOfFire = self.rateOfFire + .001
 	end
+
+    return true
 end
 
 function Player:draw()
-	love.graphics.draw(ship, self.x, self.y, self.r, 1, 1, self.offsetX, self.offsetY)
+    if self.isDestroyed then
+        love.graphics.draw(shipP1, self.piece1.x, self.piece1.y, self.piece1.r)
+        love.graphics.draw(shipP2, self.piece2.x, self.piece2.y, self.piece2.r)
+        love.graphics.draw(shipP3, self.piece3.x, self.piece3.y, self.piece3.r)
+        return
+    end
+    if self.spawnDt > 0 then
+	    love.graphics.draw(spawning, self.x, self.y, self.r, 1, 1, self.offsetX, self.offsetY)
+    else
+	    love.graphics.draw(ship, self.x, self.y, self.r, 1, 1, self.offsetX, self.offsetY)
+    end
     love.graphics.print(self.rateOfFire, 0, 20)
+end
+
+function Player:destroy()
+    if self.isDestroyed then return end
+    --self.rect.x = -1
+    --self.rect.y = -1
+    --self.rect.width = 0
+    --self.rect.height = 0
+    self.isDestroyed = true
+    self.piece1 = {x = self.x, y = self.y, r = 0, rspeed = math.random(5), xspeed = math.random(-10,10), yspeed = math.random(-10,10)}
+    self.piece2 = {x = self.x, y = self.y, r = 0, rspeed = math.random(5), xspeed = math.random(-10,10), yspeed = math.random(-10,10)}
+    self.piece3 = {x = self.x, y = self.y, r = 0, rspeed = math.random(5), xspeed = math.random(-10,10), yspeed = math.random(-10,10)}
 end
