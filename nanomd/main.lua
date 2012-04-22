@@ -37,13 +37,33 @@ function love.load()
 
     player = Player(400,300, 150, 5, .01)
     score = 0
-    lives = 0
+    lives = 2
     gameover = false
     gameoverDt = 3
     state = "intro"
+    wave = 1
+
 	projectiles = {}
 	entities = {}
-    table.insert(entities, Worm(math.random(800), math.random(600), 7))
+    setupWave()
+end
+
+function setupWave()
+    for i=1,10 + wave*5,1 do
+        table.insert(entities, Amoeba(math.random(800), math.random(600)))
+    end
+
+    if wave > 2 then
+        for i=1,5 + wave*5,1 do
+            table.insert(entities, Bacteria(math.random(800), math.random(600)))
+        end
+    end
+
+    if wave > 5 then
+        for i=1,wave,1 do
+            table.insert(entities, Worm(math.random(800), math.random(600), 7))
+        end
+    end
 end
 
 function love.keyreleased(key)
@@ -56,7 +76,10 @@ function love.keyreleased(key)
     elseif state == "topten" then
         if key == "return" then
             state = "intro"
+            entities = {}
             lives = 2
+            wave = 1
+            setupWave()
             gameoverDt = 3
             gameover = false
             player:reset(400,300)
@@ -67,7 +90,7 @@ function love.keyreleased(key)
 end
 
 function love.update(dt)
-    if gameover then
+    if gameover and state ~= "topten" then
         gameoverDt = gameoverDt - dt
         if gameoverDt < 0 then
             state = "topten"
@@ -98,6 +121,12 @@ function love.update(dt)
 			table.remove(entities, i)
 		end
 	end
+
+    if #entities == 0 then
+        wave = wave + 1
+        setupWave()
+        player.spawnDt = 3
+    end
 
 	for i,p in pairs(projectiles) do
 		if not p:update(dt) then
