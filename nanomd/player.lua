@@ -37,12 +37,15 @@ function Player:getRect()
 end
 
 
-function Player:reset(x, y)
+function Player:reset(x, y, speed, rspeed, rateOfFire)
     self.isDestroyed = false
     self.destroyedDt = 0
     self.spawnDt = 3
     self.x = x
     self.y = y
+    if speed ~= nil then self.speed = speed end
+    if rspeed ~= nil then self.rspeed = rspeed end
+    if rateOfFire ~= nil then self.rateOfFire = rateOfFire end
 end
 
 --[[function Player:updateRect()

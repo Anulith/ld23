@@ -23,6 +23,7 @@ function love.load()
     gameoverGfx = love.graphics.newImage("gfx/gameover.png")
     introGfx = love.graphics.newImage("gfx/intro.png")
     wormGfx = love.graphics.newImage("gfx/worm.png")
+    waveclearGfx = love.graphics.newImage("gfx/waveclear.png")
 
     font = love.graphics.newFont("chintzy_cpu_brk/chintzy.ttf", 12)
     love.graphics.setFont(font)
@@ -35,13 +36,14 @@ function love.load()
         end
     end
 
-    player = Player(400,300, 150, 5, .01)
+    player = Player(400,300, 20, 2, .16)
     score = 0
     lives = 2
     gameover = false
     gameoverDt = 3
     state = "intro"
     wave = 1
+    freemen = {}
 
 	projectiles = {}
 	entities = {}
@@ -66,7 +68,7 @@ function setupWave()
     end
 end
 
-function love.keyreleased(key)
+function love.keypressed(key)
     if state == "intro" then
         if key == "return" then
             state = "game"
@@ -82,14 +84,31 @@ function love.keyreleased(key)
             setupWave()
             gameoverDt = 3
             gameover = false
-            player:reset(400,300)
+            player:reset(400,300, 20, 2, .2)
         else
             return
         end
+    elseif state == "waveclear" then
+        if key == "return" then
+            if powerupChoice == 0 then
+                player.speed = player.speed + 30
+            elseif powerupChoice == 1 then
+                player.rspeed = player.rspeed + .5
+            else
+                player.rateOfFire = player.rateOfFire - .02 
+            end
+            state = "game"
+        elseif key == "down" then
+            if powerupChoice < 2 then powerupChoice = powerupChoice + 1 end
+        elseif key == "up" then
+            if powerupChoice > 0 then powerupChoice = powerupChoice - 1 end
+        end 
     end
 end
 
 function love.update(dt)
+    if state == "waveclear" then return end
+
     if gameover and state ~= "topten" then
         gameoverDt = gameoverDt - dt
         if gameoverDt < 0 then
@@ -126,6 +145,8 @@ function love.update(dt)
         wave = wave + 1
         setupWave()
         player.spawnDt = 3
+        state = "waveclear"
+        powerupChoice = 0
     end
 
 	for i,p in pairs(projectiles) do
@@ -133,11 +154,21 @@ function love.update(dt)
 			table.remove(projectiles, i)
 		end
 	end
+
+    score10k = math.floor(score/10000)
+    if score10k > 0 and freemen[score10k] == nil then
+        freemen[score10k] = 1
+        lives = lives + 1
+    end
 end
 
 function love.draw()
     if state == "intro" then
         love.graphics.draw(introGfx, 0, 0)
+        return
+    elseif state == "waveclear" then
+        love.graphics.draw(waveclearGfx, 200, 200)
+        love.graphics.draw(ship, 320, 297 + 18 * powerupChoice, HALFPI, .5, .5, ship:getWidth()/2, ship:getHeight()/2)
         return
     end
     love.graphics.draw(bgGfx, 0, 0)
