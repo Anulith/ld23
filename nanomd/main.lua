@@ -5,6 +5,7 @@ require("projectile")
 require("amoeba")
 require("bacteria")
 require("worm")
+require("virus")
 
 
 function love.load()
@@ -23,7 +24,9 @@ function love.load()
     gameoverGfx = love.graphics.newImage("gfx/gameover.png")
     introGfx = love.graphics.newImage("gfx/intro.png")
     wormGfx = love.graphics.newImage("gfx/worm.png")
+    virusGfx = love.graphics.newImage("gfx/virus.png")
     waveclearGfx = love.graphics.newImage("gfx/waveclear.png")
+    creditsGfx = love.graphics.newImage("gfx/credits.png")
 
     font = love.graphics.newFont("chintzy_cpu_brk/chintzy.ttf", 12)
     love.graphics.setFont(font)
@@ -41,16 +44,18 @@ function love.load()
     lives = 2
     gameover = false
     gameoverDt = 3
-    state = "intro"
+    state = "credits"
     wave = 1
     freemen = {}
 
 	projectiles = {}
 	entities = {}
     setupWave()
+    --table.insert(entities, Virus(math.random(800), math.random(600)))
 end
 
 function setupWave()
+    table.insert(entities, Amoeba(player.x, player.y))
     for i=1,10 + wave*5,1 do
         table.insert(entities, Amoeba(math.random(800), math.random(600)))
     end
@@ -66,12 +71,25 @@ function setupWave()
             table.insert(entities, Worm(math.random(800), math.random(600), 7))
         end
     end
+
+    if wave > 7 then
+        for i=1,wave-6,1 do
+            table.insert(entities, Virus(math.random(800), math.random(600)))
+        end
+    end
 end
 
 function love.keypressed(key)
-    if state == "intro" then
+    if state == "credits" then
+        if key == "return" then
+            state = "intro"
+        else
+            return
+        end
+    elseif state == "intro" then
         if key == "return" then
             state = "game"
+            player.spawnDt = 3
         else
             return
         end
@@ -84,6 +102,7 @@ function love.keypressed(key)
             setupWave()
             gameoverDt = 3
             gameover = false
+            score = 0
             player:reset(400,300, 20, 2, .2)
         else
             return
@@ -93,7 +112,7 @@ function love.keypressed(key)
             if powerupChoice == 0 then
                 player.speed = player.speed + 30
             elseif powerupChoice == 1 then
-                player.rspeed = player.rspeed + .5
+                player.rspeed = player.rspeed + 1
             else
                 player.rateOfFire = player.rateOfFire - .02 
             end
@@ -163,7 +182,10 @@ function love.update(dt)
 end
 
 function love.draw()
-    if state == "intro" then
+    if state == "credits" then
+        love.graphics.draw(creditsGfx, 0, 0)
+        return
+    elseif state == "intro" then
         love.graphics.draw(introGfx, 0, 0)
         return
     elseif state == "waveclear" then

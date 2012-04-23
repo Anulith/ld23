@@ -1,6 +1,8 @@
 Player = class()
 
 function Player:__init(x, y, speed, rspeed, rateOfFire)
+    self.isDestroyed = false
+    self.spawnDt = 500
     self.x = x
     self.y = y
     self.r = 0
@@ -16,7 +18,6 @@ function Player:__init(x, y, speed, rspeed, rateOfFire)
     self.fireDt = rateOfFire
     self.isDestroyed = false
     self.destroyedDt = 0
-    self.spawnDt = 3
 end
 
 function Player:getRect()
@@ -139,6 +140,7 @@ end
 
 function Player:destroy()
     if self.isDestroyed then return end
+    if self.spawnDt > 0 then return end
     --self.rect.x = -1
     --self.rect.y = -1
     --self.rect.width = 0
